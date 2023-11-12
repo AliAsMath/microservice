@@ -12,7 +12,7 @@ import { ReservationsService } from './reservations.service';
 import { CreateReservationDto } from './dto/create-reservation.dto';
 import { UpdateReservationDto } from './dto/update-reservation.dto';
 import { JwtAuthGuard } from '@app/common/guards';
-import { CurrentUser } from '@app/common';
+import { CurrentUser, Roles } from '@app/common';
 import { UserDto } from '@app/common/dto';
 
 @Controller('reservations')
@@ -25,7 +25,7 @@ export class ReservationsController {
     @Body() createReservationDto: CreateReservationDto,
     @CurrentUser() user: UserDto,
   ) {
-    return this.reservationsService.create(createReservationDto, user._id);
+    return this.reservationsService.create(createReservationDto, user);
   }
 
   @Get()
@@ -50,6 +50,7 @@ export class ReservationsController {
   }
 
   @Delete(':id')
+  @Roles('Admin')
   @UseGuards(JwtAuthGuard)
   remove(@Param('id') id: string) {
     return this.reservationsService.remove(id);

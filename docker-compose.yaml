@@ -13,6 +13,7 @@ services:
       - .:/usr/src/app
       - /usr/src/app/node_modules
       - /usr/src/app/dist
+
   auth:
     build:
       context: .
@@ -27,19 +28,32 @@ services:
       - .:/usr/src/app
       - /usr/src/app/node_modules
       - /usr/src/app/dist
+
   payments:
     build:
       context: .
       dockerfile: ./apps/payments/Dockerfile
       target: development
     command: pnpm run start:dev payments
-    ports:
-      - '3003:3003'
     env_file:
       - './apps/payments/.env'
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
       - /usr/src/app/dist
+
+  notifications:
+    build:
+      context: .
+      dockerfile: ./apps/notifications/Dockerfile
+      target: development
+    command: pnpm run start:dev notifications
+    env_file:
+      - './apps/notifications/.env'
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+      - /usr/src/app/dist
+
   mongo:
     image: mongo
