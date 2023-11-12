@@ -10,7 +10,7 @@ import { ReservationRepository } from './reservations.repository';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as joi from 'joi';
 import { ClientsModule, Transport } from '@nestjs/microservices';
-import { AUTH_SERVICE } from '@app/common/constants';
+import { AUTH_SERVICE, PAYMENTS_SERVICE } from '@app/common/constants';
 
 @Module({
   imports: [
@@ -20,6 +20,10 @@ import { AUTH_SERVICE } from '@app/common/constants';
       validationSchema: joi.object({
         PORT: joi.number().required(),
         MONGODB_URI: joi.string().required(),
+        AUTH_HOST: joi.string().required(),
+        AUTH_PORT: joi.number().required(),
+        PAYMENTS_HOST: joi.string().required(),
+        PAYMENTS_PORT: joi.number().required(),
       }),
     }),
     DatabaseModule,
@@ -35,6 +39,17 @@ import { AUTH_SERVICE } from '@app/common/constants';
           options: {
             host: configService.get('AUTH_HOST'),
             port: configService.get('AUTH_PORT'),
+          },
+        }),
+        inject: [ConfigService],
+      },
+      {
+        name: PAYMENTS_SERVICE,
+        useFactory: (configService: ConfigService) => ({
+          transport: Transport.TCP,
+          options: {
+            host: configService.get('PAYMENTS_HOST'),
+            port: configService.get('PAYMENTS_PORT'),
           },
         }),
         inject: [ConfigService],

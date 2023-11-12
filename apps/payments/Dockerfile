@@ -4,7 +4,6 @@ WORKDIR /usr/src/app
 
 RUN npm install -g pnpm
 
-
 COPY package.json ./
 COPY pnpm-lock.yaml ./
 
@@ -31,4 +30,4 @@ RUN pnpm install --prod
 
 COPY --from=development /usr/src/app/dist ./dist
 
-CMD ["node", "dist/apps/reservations/main"]
+CMD ["node", "dist/apps/payments/main"]
