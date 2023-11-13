@@ -1,3 +1,4 @@
+import { UsersDocument } from '@app/common';
 import {
   CanActivate,
   ExecutionContext,
@@ -7,7 +8,6 @@ import {
 import { ClientProxy } from '@nestjs/microservices';
 import { Observable, catchError, map, of, tap } from 'rxjs';
 import { AUTH_SERVICE } from '../constants';
-import { UserDto } from '../dto';
 import { Reflector } from '@nestjs/core';
 
 export class JwtAuthGuard implements CanActivate {
@@ -26,7 +26,7 @@ export class JwtAuthGuard implements CanActivate {
     const roles = this.reflector.get('roles', context.getHandler());
 
     return this.clientProxy
-      .send<UserDto>('authenticate', { Authentication: jwt })
+      .send<UsersDocument>('authenticate', { Authentication: jwt })
       .pipe(
         tap((res) => {
           if (roles)

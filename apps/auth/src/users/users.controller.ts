@@ -1,7 +1,7 @@
 import { CreateUserDto } from './../dto/create-user.dto';
 import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { UsersDocument } from '../model/users.schema';
+import { UsersDocument } from '@app/common';
 import { AuthGuard } from '@nestjs/passport';
 import { CurrentUser } from '@app/common';
 

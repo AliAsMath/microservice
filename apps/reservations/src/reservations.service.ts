@@ -5,7 +5,8 @@ import { ReservationRepository } from './reservations.repository';
 import { PAYMENTS_SERVICE } from '@app/common/constants';
 import { ClientProxy } from '@nestjs/microservices';
 import { catchError, map, of } from 'rxjs';
-import { CreateChargeDto, UserDto } from '@app/common/dto';
+import { CreateChargeDto } from '@app/common/dto';
+import { UsersDocument } from '@app/common';
 
 @Injectable()
 export class ReservationsService {
@@ -15,7 +16,7 @@ export class ReservationsService {
   ) {}
   async create(
     createReservationDto: CreateReservationDto,
-    { _id: userId, email }: UserDto,
+    { _id: userId, email }: UsersDocument,
   ) {
     return this.paymentsService
       .send<CreateChargeDto>('create-charge', { id: '1234', email })
@@ -25,7 +26,7 @@ export class ReservationsService {
           return this.reservationRepository.create({
             ...createReservationDto,
             timestamps: new Date(),
-            userId,
+            userId: userId.toString(),
             invoiceId: res.id,
           });
         }),
