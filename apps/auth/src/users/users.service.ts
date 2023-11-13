@@ -6,6 +6,7 @@ import {
 import { UsersRepository } from './users.repository';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { GetUserDto } from '../dto/get-user.dto';
+import { Role, User } from '@app/common';
 
 @Injectable()
 export class UsersService {
@@ -13,7 +14,12 @@ export class UsersService {
 
   async create(createUserDto: CreateUserDto) {
     await this.validateCreateUser(createUserDto);
-    return this.usersRepository.create(createUserDto);
+    const user = new User({
+      ...createUserDto,
+      roles: createUserDto.roles?.map((role) => new Role(role)),
+    });
+
+    return this.usersRepository.create(user);
   }
 
   private async validateCreateUser(createUser: CreateUserDto) {
@@ -38,6 +44,6 @@ export class UsersService {
   }
 
   async getUser(getUserDto: GetUserDto) {
-    return this.usersRepository.findOne(getUserDto);
+    return this.usersRepository.findOne(getUserDto, { roles: true });
   }
 }

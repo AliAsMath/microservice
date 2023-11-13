@@ -7,8 +7,8 @@ import {
 import { ClientProxy } from '@nestjs/microservices';
 import { Observable, catchError, map, of, tap } from 'rxjs';
 import { AUTH_SERVICE } from '../constants';
-import { UserDto } from '../dto';
 import { Reflector } from '@nestjs/core';
+import { User } from '@app/common';
 
 export class JwtAuthGuard implements CanActivate {
   constructor(
@@ -23,15 +23,15 @@ export class JwtAuthGuard implements CanActivate {
 
     if (!jwt) return false;
 
-    const roles = this.reflector.get('roles', context.getHandler());
+    const roles = this.reflector.get<string[]>('roles', context.getHandler());
 
     return this.clientProxy
-      .send<UserDto>('authenticate', { Authentication: jwt })
+      .send<User>('authenticate', { Authentication: jwt })
       .pipe(
         tap((res) => {
           if (roles)
             for (const role of roles)
-              if (!res.roles.includes(role))
+              if (!res.roles.map((role) => role.name).includes(role))
                 throw new UnauthorizedException(
                   'User dose not have enough role.',
                 );

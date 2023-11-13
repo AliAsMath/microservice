@@ -55,5 +55,9 @@ services:
       - /usr/src/app/node_modules
       - /usr/src/app/dist
 
-  mongo:
-    image: mongo
+  mysql:
+    image: mysql
+    env_file:
+      - .env
+    ports:
+      - '3306:3306'
