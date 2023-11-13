@@ -1,20 +1,27 @@
-import { UsersDocument } from '@app/common';
+import { AUTH_SERVICE_NAME, AuthServiceClient } from '@app/common';
 import {
   CanActivate,
   ExecutionContext,
   Inject,
+  OnModuleInit,
   UnauthorizedException,
 } from '@nestjs/common';
-import { ClientProxy } from '@nestjs/microservices';
+import { ClientGrpc } from '@nestjs/microservices';
 import { Observable, catchError, map, of, tap } from 'rxjs';
-import { AUTH_SERVICE } from '../constants';
 import { Reflector } from '@nestjs/core';
 
-export class JwtAuthGuard implements CanActivate {
+export class JwtAuthGuard implements CanActivate, OnModuleInit {
+  private authService: AuthServiceClient;
+
   constructor(
-    @Inject(AUTH_SERVICE) private readonly clientProxy: ClientProxy,
+    @Inject(AUTH_SERVICE_NAME) private readonly client: ClientGrpc,
     private readonly reflector: Reflector,
   ) {}
+
+  onModuleInit() {
+    this.authService =
+      this.client.getService<AuthServiceClient>(AUTH_SERVICE_NAME);
+  }
 
   canActivate(
     context: ExecutionContext,
@@ -25,20 +32,18 @@ export class JwtAuthGuard implements CanActivate {
 
     const roles = this.reflector.get('roles', context.getHandler());
 
-    return this.clientProxy
-      .send<UsersDocument>('authenticate', { Authentication: jwt })
-      .pipe(
-        tap((res) => {
-          if (roles)
-            for (const role of roles)
-              if (!res.roles.includes(role))
-                throw new UnauthorizedException(
-                  'User dose not have enough role.',
-                );
-          context.switchToHttp().getRequest().user = res;
-        }),
-        map(() => true),
-        catchError(() => of(false)),
-      );
+    return this.authService.authenticate({ Authentication: jwt }).pipe(
+      tap((res) => {
+        if (roles)
+          for (const role of roles)
+            if (!res.roles.includes(role))
+              throw new UnauthorizedException(
+                'User dose not have enough role.',
+              );
+        context.switchToHttp().getRequest().user = { ...res, _id: res.id };
+      }),
+      map(() => true),
+      catchError(() => of(false)),
+    );
   }
 }

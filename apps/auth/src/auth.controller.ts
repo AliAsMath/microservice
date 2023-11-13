@@ -1,13 +1,17 @@
 import { Controller, Post, Res, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
-import { UsersDocument } from '@app/common';
+import {
+  AuthServiceController,
+  AuthServiceControllerMethods,
+  UsersDocument,
+} from '@app/common';
 import { Response } from 'express';
 import { CurrentUser } from '@app/common';
-import { MessagePattern, Payload } from '@nestjs/microservices';
 
 @Controller()
-export class AuthController {
+@AuthServiceControllerMethods()
+export class AuthController implements AuthServiceController {
   constructor(private readonly authService: AuthService) {}
 
   @UseGuards(AuthGuard('local'))
@@ -21,8 +25,7 @@ export class AuthController {
   }
 
   @UseGuards(AuthGuard('jwt'))
-  @MessagePattern('authenticate')
-  async authenticate(@Payload() data: any) {
-    return data.user;
+  async authenticate(data: any) {
+    return { ...data.user, id: data.user._id };
   }
 }

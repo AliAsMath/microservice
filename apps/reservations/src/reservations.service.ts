@@ -1,37 +1,44 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { CreateReservationDto } from './dto/create-reservation.dto';
 import { UpdateReservationDto } from './dto/update-reservation.dto';
 import { ReservationRepository } from './reservations.repository';
-import { PAYMENTS_SERVICE } from '@app/common/constants';
-import { ClientProxy } from '@nestjs/microservices';
+import { ClientGrpc } from '@nestjs/microservices';
 import { catchError, map, of } from 'rxjs';
-import { CreateChargeDto } from '@app/common/dto';
-import { UsersDocument } from '@app/common';
+import {
+  PAYMENT_SERVICE_NAME,
+  PaymentServiceClient,
+  UsersDocument,
+} from '@app/common';
 
 @Injectable()
-export class ReservationsService {
+export class ReservationsService implements OnModuleInit {
+  private paymentsService: PaymentServiceClient;
   constructor(
     private readonly reservationRepository: ReservationRepository,
-    @Inject(PAYMENTS_SERVICE) private readonly paymentsService: ClientProxy,
+    @Inject(PAYMENT_SERVICE_NAME) private readonly client: ClientGrpc,
   ) {}
+
+  onModuleInit() {
+    this.paymentsService =
+      this.client.getService<PaymentServiceClient>(PAYMENT_SERVICE_NAME);
+  }
+
   async create(
     createReservationDto: CreateReservationDto,
     { _id: userId, email }: UsersDocument,
   ) {
-    return this.paymentsService
-      .send<CreateChargeDto>('create-charge', { id: '1234', email })
-      .pipe(
-        map((res) => {
-          console.log(res);
-          return this.reservationRepository.create({
-            ...createReservationDto,
-            timestamps: new Date(),
-            userId: userId.toString(),
-            invoiceId: res.id,
-          });
-        }),
-        catchError((err) => of(err)),
-      );
+    return this.paymentsService.createCharge({ id: '1234', email }).pipe(
+      map((res) => {
+        console.log(res);
+        return this.reservationRepository.create({
+          ...createReservationDto,
+          timestamps: new Date(),
+          userId: userId.toString(),
+          invoiceId: res.id,
+        });
+      }),
+      catchError((err) => of(err)),
+    );
   }
 
   findAll() {

@@ -1,6 +1,7 @@
 import { IsEmail, IsString } from 'class-validator';
+import { CreateChargeMessage } from '../types';
 
-export class CreateChargeDto {
+export class CreateChargeDto implements CreateChargeMessage {
   @IsString()
   id: string;
 

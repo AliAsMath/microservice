@@ -1,17 +1,34 @@
-import { NOTIFICATIONS_SERVICE } from '@app/common/constants';
+import {
+  NOTIFICATIONS_SERVICE_NAME,
+  NotificationsServiceClient,
+} from '@app/common';
 import { CreateChargeDto } from '@app/common/dto';
-import { Inject, Injectable } from '@nestjs/common';
-import { ClientProxy } from '@nestjs/microservices';
+import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
+import { ClientGrpc } from '@nestjs/microservices';
 
 @Injectable()
-export class PaymentsService {
+export class PaymentsService implements OnModuleInit {
+  private notificationsService: NotificationsServiceClient;
+
   constructor(
-    @Inject(NOTIFICATIONS_SERVICE)
-    private readonly notificationsService: ClientProxy,
+    @Inject(NOTIFICATIONS_SERVICE_NAME)
+    private readonly client: ClientGrpc,
   ) {}
+
+  onModuleInit() {
+    this.notificationsService =
+      this.client.getService<NotificationsServiceClient>(
+        NOTIFICATIONS_SERVICE_NAME,
+      );
+  }
 
   async createCharge({ email, id }: CreateChargeDto) {
     console.log(`create charge with id ${id}`);
-    this.notificationsService.emit('notify-email', { email });
+    if (!this.notificationsService)
+      this.notificationsService =
+        this.client.getService<NotificationsServiceClient>(
+          NOTIFICATIONS_SERVICE_NAME,
+        );
+    this.notificationsService.notifyEmail({ email }).subscribe(() => {});
   }
 }
