@@ -42,3 +42,37 @@ export class JwtAuthGuard implements CanActivate {
       );
   }
 }
+
+export class GraphqlJwtAuthGuard implements CanActivate {
+  constructor(
+    @Inject(AUTH_SERVICE) private readonly clientProxy: ClientProxy,
+    private readonly reflector: Reflector,
+  ) {}
+
+  canActivate(
+    context: ExecutionContext,
+  ): boolean | Promise<boolean> | Observable<boolean> {
+    const jwt = context.getArgByIndex(2).req.headers.authentication;
+
+    if (!jwt) return false;
+
+    const roles = this.reflector.get('roles', context.getHandler());
+
+    return this.clientProxy
+      .send<UsersDocument>('authenticate', { Authentication: jwt })
+      .pipe(
+        tap((res) => {
+          if (roles)
+            for (const role of roles)
+              if (!res.roles.includes(role))
+                throw new UnauthorizedException(
+                  'User dose not have enough role.',
+                );
+          // context.switchToHttp().getRequest().user = res;
+          context.getArgByIndex(2).req.user = res;
+        }),
+        map(() => true),
+        catchError(() => of(false)),
+      );
+  }
+}
