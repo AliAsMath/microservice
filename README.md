@@ -24,7 +24,7 @@
 
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+Microservice apps using nest.js, REST, graphQL, rabbitMQ, gRPC, mongoDB, typeorm, ...
 
 ## Installation
 
@@ -35,39 +35,20 @@ $ pnpm install
 ## Running the app
 
 ```bash
-# development
-$ pnpm run start
-
 # watch mode
-$ pnpm run start:dev
-
-# production mode
-$ pnpm run start:prod
+$ pnpm run start:dev [app_name]
 ```
 
-## Test
+## docker
 
 ```bash
-# unit tests
-$ pnpm run test
-
-# e2e tests
-$ pnpm run test:e2e
-
-# test coverage
-$ pnpm run test:cov
+# docker run
+$ docker-compose up
 ```
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
 
 ## Stay in touch
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+- Author - [Ali Ashiri](https://ali-ashiri.vercel.app)
+- Website - [Ali Ashiri](https://ali-ashiri.vercel.app)
 
-## License
 
-Nest is [MIT licensed](LICENSE).
